@@ -1,5 +1,5 @@
 FROM ubuntu:latest
-MAINTAINER Haifeng Wang <hfwang at Yahoo.com>
+MAINTAINER Haifeng Wang <hfwang at yahoo.com>
 
 # Postgresql DB
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list
