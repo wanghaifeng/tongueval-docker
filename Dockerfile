@@ -12,20 +12,6 @@ RUN apt-get upgrade -y
 #ffmpeg OR avconv, used for audio file convert
 RUN apt-get install -y libav-tools
 
-RUN apt-get install -y postgresql postgresql-contrib
-RUN mkdir -p /opt/postgresql/tongueval
-RUN chown postgres:postgres /opt/postgresql/tongueval
-COPY ./tongueval.sql /opt
-
-USER postgres 
-COPY pg_hba.conf /etc/postgresql/9.5/main/pg_hba.conf
-RUN /etc/init.d/postgresql start && \
- psql --command "CREATE TABLESPACE tongueval LOCATION '/opt/postgresql/tongueval';" && \
- psql --command "CREATE USER tongueval WITH PASSWORD 'password';"  && \
- psql --command "CREATE DATABASE tongueval OWNER=tongueval template=template0 encoding='UTF-8' TABLESPACE=tongueval;" && \
- psql -U tongueval  tongueval < /opt/tongueval.sql
-
-USER root
 RUN cd /opt && \
   wget --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.tar.gz && \
   tar zxvf jdk-8u45-linux-x64.tar.gz
@@ -36,12 +22,28 @@ RUN cd /opt && \
 
 RUN rm -f /opt/*.gz
 
-COPY ./web.xml /opt/apache-tomcat-8.0.33/conf/
-COPY ./server.xml /opt/apache-tomcat-8.0.33/conf/
+COPY res/* /opt/apache-tomcat-8.0.33/webapps/ROOT/
+
+RUN apt-get install -y postgresql postgresql-contrib
+RUN mkdir -p /opt/postgresql/tongueval
+RUN chown postgres:postgres /opt/postgresql/tongueval
+
+COPY ./tongueval.sql /opt
+COPY ./res/web.xml /opt/apache-tomcat-8.0.33/conf/
+COPY ./res/server.xml /opt/apache-tomcat-8.0.33/conf/
 COPY ./MyDSKeyStore.jks /opt/apache-tomcat-8.0.33/conf/
 COPY *.war /opt/apache-tomcat-8.0.33/webapps/
 
-COPY res/* /opt/apache-tomcat-8.0.33/webapps/ROOT/
+USER postgres 
+COPY ./res/pg_hba.conf /etc/postgresql/9.5/main/pg_hba.conf
+RUN /etc/init.d/postgresql start && \
+ psql --command "CREATE TABLESPACE tongueval LOCATION '/opt/postgresql/tongueval';" && \
+ psql --command "CREATE USER tongueval WITH PASSWORD 'password';"  && \
+ psql --command "CREATE DATABASE tongueval OWNER=tongueval template=template0 encoding='UTF-8' TABLESPACE=tongueval;" && \
+ psql -U tongueval  tongueval < /opt/tongueval.sql
+
+USER root
+
 
 EXPOSE 8080 8443 443
 
