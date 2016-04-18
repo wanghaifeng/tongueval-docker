@@ -32,9 +32,9 @@ COPY ./tongueval.sql /opt
 COPY ./res/web.xml /opt/apache-tomcat-8.0.33/conf/
 COPY ./res/server.xml /opt/apache-tomcat-8.0.33/conf/
 COPY ./MyDSKeyStore.jks /opt/apache-tomcat-8.0.33/conf/
-COPY *.war /opt/apache-tomcat-8.0.33/webapps/
 
 USER postgres 
+
 COPY ./res/pg_hba.conf /etc/postgresql/9.5/main/pg_hba.conf
 RUN /etc/init.d/postgresql start && \
  psql --command "CREATE TABLESPACE tongueval LOCATION '/opt/postgresql/tongueval';" && \
@@ -44,8 +44,8 @@ RUN /etc/init.d/postgresql start && \
 
 USER root
 
-
-EXPOSE 8080 8443 443
+COPY *.war /opt/apache-tomcat-8.0.33/webapps/
+EXPOSE 8080 8443
 
 CMD export JAVA_HOME=/opt/jdk1.8.0_45 && /etc/init.d/postgresql start && /opt/apache-tomcat-8.0.33/bin/startup.sh && tail -f /opt/apache-tomcat-8.0.33/logs/catalina.out
 
